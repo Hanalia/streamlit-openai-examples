@@ -1,7 +1,5 @@
 # Streamlit + OpenAI 예제 모음
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/streamlit/llm-examples?quickstart=1)
-
 Streamlit과 OpenAI API를 활용한 다양한 AI 프로그램 예제 모음입니다.
 
 ## 앱 개요
