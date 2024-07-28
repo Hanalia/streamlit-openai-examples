@@ -1,5 +1,10 @@
 import streamlit as st
 from openai import OpenAI
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 def main():
@@ -14,6 +19,10 @@ def main():
         st.markdown(
             "[OpenAI API key 받기](https://platform.openai.com/account/api-keys)"
         )
+
+    ## 개반전용 모드
+    if os.environ["DEV_MODE"] == "TRUE":
+        openai_api_key = os.getenv("OPENAI_API_KEY")
 
     system_message = """
     너는 문서 요약 전문가야. 주어진 텍스트를 간결하고 명확하게 요약해줘.

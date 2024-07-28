@@ -1,6 +1,10 @@
+import os
 import streamlit as st
 from openai import OpenAI
 from elevenlabs.client import ElevenLabs
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def main():
@@ -15,6 +19,10 @@ def main():
         st.markdown(
             "[Elevenlabs API key 받기](https://beta.elevenlabs.io/subscription)"
         )
+
+    ## 개반전용 모드
+    if os.environ["DEV_MODE"] == "TRUE":
+        elevenlabs_api_key = os.getenv("ELEVENLABS_API_KEY")
 
     default_user_input = """안녕하세요, 여러분. 오늘 우리는 영어에서 자주 사용되는 'Phrasal Verbs'에 대해 배워볼 거예요. Phrasal Verb란 동사와 전치사 또는 부사가 결합하여 새로운 의미를 만드는 표현입니다. 이것은 한국어와는 매우 다른 개념이죠.
 

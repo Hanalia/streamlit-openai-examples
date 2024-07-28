@@ -1,10 +1,9 @@
 import os
 from typing import BinaryIO
+from dotenv import load_dotenv
 import streamlit as st
 from openai import OpenAI
 import fitz  # PyMuPDF library to handle PDF files
-from dotenv import load_dotenv
-
 
 load_dotenv()
 
@@ -20,7 +19,7 @@ def style_language_uploader():
         },
         "ko": {
             "button": "파일 찾아보기",
-            "instructions": "여기에 파일을 끌어다 놓으세요",
+            "instructions": "여기에 mp3 파일을 끌어다 놓으세요",
             "limits": "파일당 200MB 제한",
         },
     }
@@ -75,66 +74,59 @@ def extract_text_from_pdf(file):
 def main():
     st.set_page_config(layout="wide")
     style_language_uploader()
-    st.title("PDF문서 번역/요약")
-    st.caption("PDF 파일을 업로드해 주세요")
+    st.title("회의내용 AI로 정리")
+    st.caption("회의내용 음성 파일을 업로드해 주세요")
 
     with st.sidebar:
         openai_api_key = st.text_input(
             "OpenAI API Key", key="summarizer_api_key", type="password"
         )
+
         st.markdown(
             "[OpenAI API key 받기](https://platform.openai.com/account/api-keys)"
         )
-
-    ## 개반전용 모드
     if os.environ["DEV_MODE"] == "TRUE":
         openai_api_key = os.getenv("OPENAI_API_KEY")
 
-    system_message = """
-    너는 문서 요약 전문가야. 주어진 텍스트를 간결하고 명확하게 번역하고 요약해줘.
-    - 요약은 항상 한글로 해야 해. 
-    - 마크다운과 불렛포인트로 표현해줘
-    - 요약은 원문의 핵심 내용을 포함해야 하고, 불필요한 세부사항은 제외해.
-    요약 끝에는 적절한 이모티콘을 추가해줘.
-    """
-
     if "messages" not in st.session_state:
-        st.session_state.messages = [{"role": "system", "content": system_message}]
+        st.session_state.messages = []
 
-    pdf_file = st.file_uploader(
-        "PDF 파일을 업로드하세요", type=["pdf"], label_visibility="hidden"
+    mp3_file = st.file_uploader(
+        "mp3 파일을 업로드하세요", type=["mp3"], label_visibility="hidden"
     )
-    if pdf_file:
-        extracted_text = extract_text_from_pdf(pdf_file)
-    else:
-        extracted_text = ""  # Default empty text if no file is uploaded
-
-    if st.button("텍스트 요약하기"):
+    if st.button("AI 분석하기"):
         if not openai_api_key:
             st.info("계속하려면 OpenAI API 키를 추가하세요.")
             st.stop()
-
-        if not extracted_text.strip():
-            st.warning("요약할 텍스트를 추출할 PDF 파일을 업로드해주세요.")
+        if not mp3_file:
+            st.warning("mp3 파일을 업로드해주세요.")
             st.stop()
 
         st.session_state["client"] = OpenAI(api_key=openai_api_key)
-
-        prompt = f"다음 텍스트를 요약해줘:\n\n{extracted_text}"
-        st.session_state.messages.append({"role": "user", "content": prompt})
-
-        with st.spinner("요약 중..."):
-            stream = st.session_state["client"].chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": m["role"], "content": m["content"]}
-                    for m in st.session_state.messages
-                ],
-                stream=True,
+        with st.spinner("텍스트 추출 및 요약 중..."):
+            transcription = st.session_state["client"].audio.transcriptions.create(
+                model="whisper-1", file=mp3_file, response_format="text"
             )
-            response = st.write_stream(stream)
+            tab1, tab2 = st.tabs(["원본 음성", "텍스트 요약"])
+            with tab1:
+                st.text_area("Transcribed Text", value=transcription, height=300)
 
-        st.session_state.messages.append({"role": "assistant", "content": response})
+            with tab2:
+                initial_prompt = """
+                다음 회의록을 요약해줘
+                - 마크다운으로 요약해줘
+                """
+                prompt = f"{initial_prompt}\n\n{transcription}"
+                st.session_state.messages.append({"role": "user", "content": prompt})
+
+                response = st.session_state["client"].chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=st.session_state.messages,
+                )
+                result_text = response.choices[
+                    0
+                ].message.content  ## stream이 아니라 바로 결과를 받기 위해서는 이 방법 이용
+                st.write(result_text)
 
 
 if __name__ == "__main__":

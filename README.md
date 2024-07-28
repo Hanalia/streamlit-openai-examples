@@ -45,4 +45,23 @@ TBD
 
 ## 기타
 
-1. OpenAI API 키 얻기 :
+1.  OpenAI API 키 얻기 :
+
+                # print("hello")
+                # st.write(st.session_state["reply"])
+                # with st.spinner("메일 회신 중"):
+                #     email_message = email.message_from_bytes(
+                #         raw_email
+                #     )  # Original email message
+                #     from_addr = email_id  # The email address to send from
+                #     reply_message = reply  # The edited draft content
+
+                #     reply_email = create_reply(
+                #         email_message, reply_message, from_addr
+                #     )
+                #     print(reply_email)
+
+                #     # Send the email
+                #     send_email(reply_email)
+
+                #     st.success("Email successfully sent!")

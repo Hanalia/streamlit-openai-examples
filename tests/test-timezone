@@ -1,0 +1,66 @@
+import re
+from datetime import datetime, timedelta
+
+# def convert_email_date_to_kst(email_date_str):
+#     # Remove the optional (GMT) or (UTC) part from the string
+#     email_date_str = re.sub(r"\s*\([A-Z]+\)$", "", email_date_str)
+
+#     # Define the correct date format of the email string without the optional part
+#     email_date_format = "%a, %d %b %Y %H:%M:%S %z"
+
+#     # Parse the email date string to a datetime object
+#     email_date = datetime.strptime(email_date_str, email_date_format)
+
+#     # KST is 9 hours ahead of UTC
+#     kst_offset = timedelta(hours=9)
+
+#     # Convert the email date from UTC to KST
+#     kst_date = email_date + kst_offset
+
+#     # Format the KST datetime to the desired format
+#     kst_date_str = kst_date.strftime("%m/%d %H:%M")
+
+#     return kst_date_str
+
+# # Test the function
+# email_date_str = 'Sat, 27 Jul 2024 08:22:13 +0000 (GMT)'
+# print(convert_email_date_to_kst(email_date_str))  # Output should be in the format "MM/DD HH:MM"
+
+from datetime import datetime
+from dateutil import parser
+from zoneinfo import ZoneInfo
+
+
+def parse_to_kst(date_string):
+    try:
+        # Parse the date string
+        dt = parser.parse(date_string)
+
+        # If the parsed date doesn't have a timezone, assume it's UTC
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=ZoneInfo("UTC"))
+
+        # Convert to KST
+        kst_dt = dt.astimezone(ZoneInfo("Asia/Seoul"))
+
+        # Format as "yy.mm hh:mm"
+        return kst_dt.strftime("%y.%m %H:%M")
+    except Exception as e:
+        return f"Error parsing: {e}"
+
+
+# Example usage
+sample_dates = [
+    "Sat, 27 Jul 2024 08:18:00 +0000 (UTC)",
+    "Sat, 27 Jul 2024 05:52:41 -0400 (EDT)",
+    "Sat, 27 Jul 2024 11:15:29 +0000",
+    "Sat, 27 Jul 2024 06:57:31 -0700",
+    "Sun, 28 Jul 2024 09:12:34 +0900",
+    "Sun, 28 Jul 2024 15:02:22 +0900 (KST)",
+    "Sun, 28 Jul 2024 07:39:41 +0000",
+]
+
+for date in sample_dates:
+    print(f"Original: {date}")
+    print(f"Parsed  : {parse_to_kst(date)}")
+    print()
