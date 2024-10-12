@@ -62,10 +62,6 @@ def main():
         st.markdown(
             "[OpenAI API key 받기](https://platform.openai.com/account/api-keys)"
         )
-    ## 개반전용 모드
-    if os.environ["DEV_MODE"] == "TRUE":
-        openai_api_key = os.getenv("OPENAI_API_KEY")
-
     system_message = """
     너는 여행계획 작성 전문가야.
     - 입력받은 도시에 대해서 오전, 오후, 저녁으로 나눠서 여행일정 작성해줘
