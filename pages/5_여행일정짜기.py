@@ -30,14 +30,13 @@ def parse_schedule(text):
     return schedule
 
 
-## returns alist of dict with images and content
+## 이미지와 내용이 포함도니 딕셔너리 반환
 ## {time:"morning", "content" : "~~", "image_url" : "~~~"}
 def parse_and_generate_images(text, client):
 
     final_result = []
     schedule_dict = parse_schedule(text)
 
-    # Generate images for each part of the schedule
     for time_of_day, details in schedule_dict.items():
         response = client.images.generate(
             model="dall-e-3", prompt=details, size="1024x1024", quality="standard", n=1
@@ -53,15 +52,18 @@ def parse_and_generate_images(text, client):
 
 def main():
     st.set_page_config(layout="wide")
-    st.title("여행일정 짜기")
+    st.title("나만의 AI 여행가이드")
+    
+    
 
     with st.sidebar:
         openai_api_key = st.text_input(
             "OpenAI API Key", key="summarizer_api_key", type="password"
         )
         st.markdown(
-            "[OpenAI API key 받기](https://platform.openai.com/account/api-keys)"
+            "[OpenAI API key 받기](https://platform.openai.com)"
         )
+
     system_message = """
     너는 여행계획 작성 전문가야.
     - 입력받은 도시에 대해서 오전, 오후, 저녁으로 나눠서 여행일정 작성해줘
